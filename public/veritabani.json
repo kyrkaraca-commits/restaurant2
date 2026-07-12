@@ -1,0 +1,90 @@
+[
+  {
+    "kategori_id": "kat_1001",
+    "kategori_adi": "Başlangıçlar & Atıştırmalıklar",
+    "urunler": [
+      {
+        "urun_id": "urun_2001",
+        "isim": "Trüflü & Parmesanlı Patates",
+        "aciklama": "Taze biberiye dalları ve hakiki trüf yağı ile harmanlanmış, ince rendelenmiş tekerlek parmesan eşliğinde çıtır patates dilimleri.",
+        "resim_url": "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 185 }]
+      },
+      {
+        "urun_id": "urun_2002",
+        "isim": "Avokado Yatağında Karides",
+        "aciklama": "Misket limonu suyu ile marine edilmiş ezme avokado üzerinde, sarımsaklı tereyağında sotelenmiş jumbo karidesler.",
+        "resim_url": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 340 }]
+      }
+    ]
+  },
+  {
+    "kategori_id": "kat_1002",
+    "kategori_adi": "Şefin İmza Yemekleri",
+    "urunler": [
+      {
+        "urun_id": "urun_2003",
+        "isim": "Ağır Ateşte Pişmiş Dana Yanak",
+        "aciklama": "Kök sebzelerle birlikte 8 saat boyunca fırınlanmış dana yanak, ipeksi patates püresi ve kendi sosu (demi-glace) ile.",
+        "resim_url": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 580 }]
+      },
+      {
+        "urun_id": "urun_2004",
+        "isim": "Kuşkonmazlı Izgara Somon",
+        "aciklama": "Taze otlarla mühürlenmiş Atlantik somonu filosu, ızgara kuşkonmaz, fırınlanmış bebek patatesler ve limonlu kapari sos.",
+        "resim_url": "https://images.unsplash.com/photo-1485962398705-ef6a13c41e8f?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 490 }]
+      },
+      {
+        "urun_id": "urun_2005",
+        "isim": "Geleneksel Kuzu İncik",
+        "aciklama": "Odun ateşinde demlenerek pişirilmiş, kemiğinden ayrılan kuzu eti, safranlı firik pilavı yatağında.",
+        "resim_url": "https://images.unsplash.com/photo-1514516345957-556ca7d90a29?w=600&auto=format&fit=crop&q=80",
+        "is_available": false,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 520 }]
+      }
+    ]
+  },
+  {
+    "kategori_id": "kat_1003",
+    "kategori_adi": "Makarnalar & Risottolar",
+    "urunler": [
+      {
+        "urun_id": "urun_2006",
+        "isim": "Yaban Mantarlı Risotto",
+        "aciklama": "Arborio pirinci, porçini ve kestane mantarları, taze kekik ve parmesan tekerleğinde bağlanmış kremamsı İtalyan klasiği.",
+        "resim_url": "https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 310 }]
+      }
+    ]
+  },
+  {
+    "kategori_id": "kat_1004",
+    "kategori_adi": "Artizan Tatlılar",
+    "urunler": [
+      {
+        "urun_id": "urun_2007",
+        "isim": "San Sebastian Cheesecake",
+        "aciklama": "İçi akışkan, üstü tam kıvamında fırınlanmış meşhur Bask pastası. Yanında sıcak Belçika çikolatası sosu ile servis edilir.",
+        "resim_url": "https://images.unsplash.com/photo-1524351199679-46cddf530c04?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Dilim", "fiyat": 165 }]
+      },
+      {
+        "urun_id": "urun_2008",
+        "isim": "Antep Fıstıklı Katmer rüyası",
+        "aciklama": "İncecik açılmış çıtır hamur arasında bol boz fıstık ve hakiki keçi sütü kaymağı, taş fırından sıcak sunum.",
+        "resim_url": "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=600&auto=format&fit=crop&q=80",
+        "is_available": true,
+        "fiyatlar": [{ "boyut": "Porsiyon", "fiyat": 210 }]
+      }
+    ]
+  }
+]

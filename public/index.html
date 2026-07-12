@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>%RESTORAN_ADI% — Gurme Menü</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-[#0b0b0c] text-zinc-100 antialiased selection:bg-amber-500 selection:text-black">
+
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full pointer-events-none z-0 overflow-hidden opacity-40">
+    <div class="absolute top-[-10%] left-[20%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[120px]"></div>
+  </div>
+
+  <div class="relative min-h-screen z-10">
+    <header class="text-center pt-16 pb-12 px-4 border-b border-zinc-900/60 max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900/80 border border-zinc-800 rounded-full text-[10px] uppercase tracking-[0.2em] text-amber-500 font-semibold mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Dijital Katalog
+      </div>
+      <h1 class="text-4xl md:text-5xl font-serif font-light tracking-tight text-white capitalize mb-2">%RESTORAN_ADI%</h1>
+      <p class="text-zinc-500 text-xs tracking-widest uppercase font-light">Seçkin Lezzetler ve Gurme Deneyimi</p>
+    </header>
+
+    <div class="sticky top-0 bg-[#0b0b0c]/85 backdrop-blur-xl z-40 border-b border-zinc-900/80 shadow-sm">
+      <div class="max-w-4xl mx-auto px-4">
+        <div id="customer-tabs" class="flex gap-2 overflow-x-auto py-4 no-scrollbar items-center"></div>
+      </div>
+    </div>
+    
+    <main class="max-w-4xl mx-auto px-4 py-12 pb-32">
+      <div id="customer-menu-container" class="space-y-16"></div>
+    </main>
+  </div>
+
+  <script>
+    async function verileriGetir() {
+      const menuVerisi = await fetch('/api/menu').then(r => r.json());
+      const alan = document.getElementById('customer-menu-container');
+      const tabsAlan = document.getElementById('customer-tabs');
+      
+      alan.innerHTML = ''; tabsAlan.innerHTML = '';
+      if(menuVerisi.length === 0) {
+        alan.innerHTML = `<p class="text-center text-zinc-600 text-sm py-24 font-light">Katalogda sergilenecek ürün bulunamadı.</p>`;
+        return;
+      }
+
+      menuVerisi.forEach((kat, index) => {
+        if(kat.urunler.length === 0) return;
+
+        const tabBtn = document.createElement('a');
+        tabBtn.href = `#sec-${kat.kategori_id}`;
+        tabBtn.className = `px-4 py-2 rounded-full text-xs font-medium border transition-all whitespace-nowrap ${index === 0 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-zinc-900/60 text-zinc-400 border-zinc-850 hover:border-zinc-700'}`;
+        tabBtn.innerText = kat.kategori_adi;
+        tabsAlan.appendChild(tabBtn);
+        
+        const katSection = document.createElement('section');
+        katSection.id = `sec-${kat.kategori_id}`;
+        katSection.className = "pt-6";
+        katSection.innerHTML = `
+          <div class="flex items-baseline gap-3 mb-8 border-b border-zinc-900 pb-2">
+            <h2 class="text-xl font-serif font-light text-zinc-100 tracking-wide">${kat.kategori_adi}</h2>
+            <div class="h-[1px] bg-zinc-900 flex-grow"></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="grid-${kat.kategori_id}"></div>`;
+        alan.appendChild(katSection);
+        
+        const grid = document.getElementById(`grid-${kat.kategori_id}`);
+        kat.urunler.forEach(urun => {
+          const kart = document.createElement('div');
+          kart.className = `group flex flex-col bg-zinc-900/20 rounded-2xl border border-zinc-900/80 overflow-hidden transition-all duration-500 hover:border-zinc-800 ${!urun.is_available ? 'opacity-40 filter grayscale' : ''}`;
+          kart.innerHTML = `
+            <div class="relative w-full aspect-[16/10] bg-zinc-900 overflow-hidden shrink-0">
+              ${!urun.is_available ? `<div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10"><span class="text-[10px] tracking-[0.3em] font-bold text-red-400 border border-red-500/30 bg-red-950/40 px-3 py-1 rounded-md">GEÇİCİ OLARAK TÜKENDİ</span></div>` : ''}
+              ${urun.resim_url ? `<img src="${urun.resim_url}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />` : `<div class="w-full h-full flex items-center justify-center text-zinc-700 text-xs">Görsel Yok</div>`}
+            </div>
+            <div class="p-5 flex flex-col justify-between flex-grow">
+              <div>
+                <div class="flex justify-between items-start gap-4">
+                  <h3 class="text-base font-medium text-zinc-100">${urun.isim}</h3>
+                  <span class="text-base font-mono font-light text-amber-400 shrink-0">${urun.fiyatlar[0].fiyat} TL</span>
+                </div>
+                <p class="text-zinc-400 text-xs font-light mt-2 leading-relaxed">${urun.aciklama}</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-zinc-900/60 flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+                <span>SUNUM</span><span class="uppercase text-zinc-400">${urun.fiyatlar[0].boyut || 'Porsiyon'}</span>
+              </div>
+            </div>`;
+          grid.appendChild(kart);
+        });
+      });
+    }
+    verileriGetir();
+  </script>
+</body>
+</html> 

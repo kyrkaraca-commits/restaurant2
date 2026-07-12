@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mutfak Kontrol Merkezi — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#0e0e10] text-zinc-100 antialiased invisible" id="admin-body">
+
+  <div class="relative min-h-screen p-4 md:p-8 z-10">
+    <div class="max-w-6xl mx-auto">
+      
+      <!-- Üst Bar -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-zinc-800 pb-6 mb-8 gap-4">
+        <div>
+          <span class="text-[10px] font-mono tracking-widest text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 uppercase font-bold">Mutfak Backoffice v4.2</span>
+          <h1 class="text-3xl font-serif font-light text-white mt-1">Yönetim Konsolu</h1>
+        </div>
+       
+      </div>
+
+      <!-- 👑 SİSTEM AYARLARI (RESTORAN ADI & API KEY) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl">
+          <h3 class="text-xs font-bold tracking-widest text-zinc-400 uppercase mb-3">🏢 Restoran Kurumsal Adı</h3>
+          <div class="flex gap-2">
+            <input id="input-restoran-adi" type="text" placeholder="Örn: Big Chefs, Retro Pub" class="flex-grow bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" />
+            <button onclick="restoranAdiKaydet()" class="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold px-4 rounded-xl transition-all">Kaydet</button>
+          </div>
+        </div>
+        <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl">
+          <h3 class="text-xs font-bold tracking-widest text-zinc-400 uppercase mb-3 flex items-center justify-between">
+            <span>🔑 Gemini AI Anahtarı</span>
+            <span id="api-durum" class="text-[9px] px-1.5 py-0.5 rounded font-mono">Kontrol Ediliyor...</span>
+          </h3>
+          <div class="flex gap-2">
+            <input id="input-api-key" type="password" placeholder="AI Sihirbazı için yeni anahtar" class="flex-grow bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" />
+            <button onclick="apiKeyKaydet()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold px-4 rounded-xl transition-all">Güncelle</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- METRİKLER -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex justify-between items-center">
+          <div><p class="text-xs text-zinc-500 uppercase tracking-wider font-medium">Toplam Kategori</p><h3 id="stat-categories" class="text-2xl font-mono font-bold text-white mt-1">0</h3></div>
+          <div class="p-3 bg-zinc-900 rounded-xl">📁</div>
+        </div>
+        <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex justify-between items-center">
+          <div><p class="text-xs text-zinc-500 uppercase tracking-wider font-medium">Aktif Lezzetler</p><h3 id="stat-active" class="text-2xl font-mono font-bold text-green-400 mt-1">0</h3></div>
+          <div class="p-3 bg-green-950/20 rounded-xl text-green-400">●</div>
+        </div>
+        <div class="bg-zinc-950 border border-zinc-900 p-5 rounded-2xl flex justify-between items-center">
+          <div><p class="text-xs text-zinc-500 uppercase tracking-wider font-medium">Tükendi İşaretli</p><h3 id="stat-outofstock" class="text-2xl font-mono font-bold text-red-400 mt-1">0</h3></div>
+          <div class="p-3 bg-red-950/20 rounded-xl text-red-400">✕</div>
+        </div>
+      </div>
+
+      <!-- Kategori Ekleme -->
+      <div class="bg-zinc-950 border border-zinc-900 p-4 rounded-2xl mb-8 flex flex-col sm:flex-row gap-3 items-center">
+        <input id="input-new-category" type="text" placeholder="Yeni Kategori Başlığı Tanımlayın..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500" />
+        <button onclick="kategoriEkle()" class="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs px-6 py-3.5 rounded-xl whitespace-nowrap transition-all">Kategori Oluştur</button>
+      </div>
+
+      <!-- ANA MATRİS -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6" id="admin-menu-tree"></div>
+
+        <!-- ÜRÜN EKLEME FORMU -->
+        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl h-fit sticky top-6 shadow-2xl">
+          <h3 id="form-title" class="text-xs font-bold tracking-widest text-zinc-400 uppercase border-b border-zinc-900 pb-3">Yeni Ürün Tanımla</h3>
+          <form id="product-form" onsubmit="urunKaydet(event)" class="space-y-4 mt-5">
+            <input type="hidden" id="form-product-id" value="" />
+            <input type="hidden" id="form-product-img-url" value="" />
+            
+            <div>
+              <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Hedef Kategori</label>
+              <select id="form-category-id" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-amber-500"></select>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Ürün Adı</label>
+              <input id="form-product-name" type="text" required placeholder="Örn: Trüflü Fettuccine" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-amber-500 text-white" />
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Açıklama</label>
+                <button type="button" onclick="aiAçıklamaYazdir()" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 bg-amber-500/5 px-2 py-0.5 rounded border border-amber-500/10">✨ AI Şef Yazsın</button>
+              </div>
+              <textarea id="form-product-desc" required rows="3" placeholder="İçeriği buraya yazın..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-amber-500 text-white"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Fiyat (TL)</label>
+                <input id="form-product-price" type="number" required placeholder="320" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-amber-500 text-white" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Sunum Tipi</label>
+                <input id="form-product-size" type="text" placeholder="Porsiyon" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-amber-500 text-white" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">Fotoğraf Yükle</label>
+              <input type="file" accept="image/*" onchange="gorselYukle(this)" class="w-full text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-zinc-200 hover:file:bg-zinc-800 file:cursor-pointer" />
+              <div id="gorsel-onizleme" class="mt-2 hidden text-[11px] font-mono"></div>
+            </div>
+
+            <div class="flex gap-2 pt-3">
+              <button type="submit" class="flex-1 bg-zinc-100 hover:bg-white text-black text-xs font-bold py-3.5 rounded-xl transition-all">Kaydet & Menüye Bas</button>
+              <button type="button" onclick="formSifirla()" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs px-4 rounded-xl">İptal</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const s = prompt("Yönetim Şifresi:\n(Şifre: admin)");
+    if (s === 'admin') document.getElementById('admin-body').classList.remove('invisible');
+    else { alert("Yetkisiz erişim!"); window.location.href = "../katalog.html"; }
+
+    let menuVerisi = [];
+    
+    // Klasör yapısına göre API yolunu otomatik bulma koruması
+    // Eğer admin.html ana dizindeyse api.php, panel klasöründeyse ../api.php kullanır.
+    const apiYolu = window.location.pathname.includes('/panel/') ? '../api.php' : 'api.php';
+
+    async function apiConfigOku() {
+      try {
+        const r = await fetch(`${apiYolu}?action=get_config`);
+        if(!r.ok) throw new Error(`Ayarlar yüklenemedi. Sunucu durumu: ${r.status}`);
+        const c = await r.json();
+        
+        const el = document.getElementById('api-durum');
+        el.innerText = c.mevcut_key ? "HAZIR" : "ANAHTAR YOK";
+        el.className = c.mevcut_key ? "text-[9px] px-1.5 py-0.5 rounded bg-green-950/40 border border-green-500/20 text-green-400 font-mono" : "text-[9px] px-1.5 py-0.5 rounded bg-red-950/40 border border-red-500/20 text-red-400 font-mono";
+        
+        document.getElementById('input-restoran-adi').value = c.restoran_adi || '';
+      } catch (hata) {
+        console.error("Config Okuma Hatası:", hata);
+      }
+    }
+
+    async function restoranAdiKaydet() {
+      const isim = document.getElementById('input-restoran-adi').value;
+      if(!isim.trim()) return;
+      await fetch(`${apiYolu}?action=save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ restoran_adi: isim })});
+      alert("Restoran adı güncellendi!");
+    }
+
+    async function apiKeyKaydet() {
+      const k = document.getElementById('input-api-key').value;
+      if(!k.trim()) return;
+      await fetch(`${apiYolu}?action=save_config`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ key: k })});
+      document.getElementById('input-api-key').value = '';
+      apiConfigOku();
+    }
+
+    async function gorselYukle(input) {
+      if(!input.files[0]) return;
+      const formData = new FormData();
+      formData.append('gorsel', input.files[0]);
+
+      const onizleme = document.getElementById('gorsel-onizleme');
+      onizleme.innerText = "Yükleniyor...";
+      onizleme.className = "mt-2 text-[11px] text-amber-400 font-mono";
+      onizleme.classList.remove('hidden');
+
+      const cevap = await fetch(`${apiYolu}?action=upload`, { method: 'POST', body: formData }).then(r => r.json());
+      if(cevap.url) {
+        document.getElementById('form-product-img-url').value = cevap.url;
+        onizleme.innerText = "✓ Görsel uploads/ klasörüne kaydedildi.";
+        onizleme.className = "mt-2 text-[11px] text-green-400 font-mono";
+      } else {
+        onizleme.innerText = "Yükleme başarısız.";
+        onizleme.className = "mt-2 text-[11px] text-red-400 font-mono";
+      }
+    }
+
+    async function verileriGetir() {
+      try {
+        const response = await fetch(`${apiYolu}?action=get_menu`);
+        
+        if (!response.ok) {
+          throw new Error(`api.php dosyasına ulaşılamadı. Sunucu Tepkisi: ${response.status}`);
+        }
+
+        const hamMetin = await response.text();
+        
+        try {
+          menuVerisi = JSON.parse(hamMetin);
+        } catch (e) {
+          throw new Error("veritabani.json dosyasının içi bozuk veya geçersiz bir JSON formatı var! Lütfen dosya içeriğini kontrol edin.");
+        }
+
+        ekranAdminCiz();
+        document.getElementById('form-category-id').innerHTML = menuVerisi.map(k => `<option value="${k.kategori_id}">${k.kategori_adi}</option>`).join('');
+        
+        let tc = menuVerisi.length, act = 0, oos = 0;
+        menuVerisi.forEach(k => {
+          if(k.urunler) {
+            k.urunler.forEach(u => u.is_available ? act++ : oos++);
+          }
+        });
+        document.getElementById('stat-categories').innerText = tc;
+        document.getElementById('stat-active').innerText = act;
+        document.getElementById('stat-outofstock').innerText = oos;
+
+      } catch (hata) {
+        // Ekrana hatayı açıkça basıyoruz ki sorun anlaşılsın
+        alert("⚠️ BAĞLANTI / VERİ HATASI:\n" + hata.message);
+        console.error(hata);
+      }
+    }
+
+    function ekranAdminCiz() {
+      const agac = document.getElementById('admin-menu-tree');
+      agac.innerHTML = (!menuVerisi || menuVerisi.length === 0) ? `<div class="bg-zinc-950 border border-zinc-900 text-center text-zinc-500 p-12 rounded-2xl text-sm font-light">Dizin boş. Üstten kategori açın.</div>` : '';
+
+      if(!menuVerisi) return;
+
+      menuVerisi.forEach(kat => {
+        const kKutu = document.createElement('div');
+        kKutu.className = "bg-zinc-950 border border-zinc-900 rounded-2xl p-5 space-y-4";
+        kKutu.innerHTML = `
+          <div class="flex justify-between items-center border-b border-zinc-900 pb-3">
+            <span class="text-sm font-bold text-zinc-300">${kat.kategori_adi} (${kat.urunler ? kat.urunler.length : 0})</span>
+            <button onclick="kategoriSil('${kat.kategori_id}')" class="text-zinc-600 hover:text-red-400 text-xs">Kategoriyi Kaldır ×</button>
+          </div>
+          <div class="space-y-2" id="a-kat-${kat.kategori_id}"></div>`;
+        agac.appendChild(kKutu);
+        
+        const liste = document.getElementById(`a-kat-${kat.kategori_id}`);
+        if(kat.urunler) {
+          kat.urunler.forEach(urun => {
+            const satir = document.createElement('div');
+            satir.className = "flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#0d0d0e] border border-zinc-900 p-3 rounded-xl gap-4";
+            
+            let imgPath = null;
+            if(urun.resim_url) {
+              imgPath = urun.resim_url.startsWith('http') ? urun.resim_url : (apiYolu === 'api.php' ? urun.resim_url : '../' + urun.resim_url);
+            }
+
+            const fiyat = (urun.fiyatlar && urun.fiyatlar[0]) ? urun.fiyatlar[0].fiyat : 0;
+
+            satir.innerHTML = `
+              <div class="flex items-center gap-3">
+                ${imgPath ? `<img src="${imgPath}" class="w-10 h-10 object-cover rounded-lg border border-zinc-800" />` : `<div class="w-10 h-10 bg-zinc-900 text-[8px] flex items-center justify-center rounded-lg">YOK</div>`}
+                <div>
+                  <h4 class="text-sm font-semibold text-zinc-200">${urun.isim} <span class="text-xs text-amber-400 font-mono">[${fiyat} TL]</span></h4>
+                  <p class="text-zinc-500 text-[11px] font-light truncate max-w-xs">${urun.aciklama || ''}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button onclick="stokDegis('${urun.urun_id}', ${!urun.is_available})" class="text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg border ${urun.is_available ? 'bg-green-500/5 text-green-400 border-green-500/20' : 'bg-red-500/5 text-red-400 border-red-500/20'}">${urun.is_available ? '● YAYINDA' : '✕ TÜKENDİ'}</button>
+                <button onclick="urunDuzenleYukle('${kat.kategori_id}', '${urun.urun_id}')" class="bg-zinc-900 text-zinc-300 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-zinc-800">Düzenle</button>
+                <button onclick="urunSil('${kat.kategori_id}', '${urun.urun_id}')" class="text-zinc-600 hover:text-red-400 text-xs">🗑️</button>
+              </div>`;
+            liste.appendChild(satir);
+          });
+        }
+      });
+    }
+
+    async function kategoriEkle() {
+      const i = document.getElementById('input-new-category');
+      if(!i.value.trim()) return;
+      await fetch(`${apiYolu}?action=add_kategori`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ isim: i.value })});
+      i.value = ''; verileriGetir();
+    }
+
+    async function kategoriSil(id) {
+      if(confirm('Kategoriyi silmek istediğinize emin misiniz?')) { 
+        await fetch(`${apiYolu}?action=delete_kategori`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: id })}); 
+        verileriGetir(); 
+      }
+    }
+
+    function urunDuzenleYukle(kId, uId) {
+      const kat = menuVerisi.find(k => k.kategori_id === kId);
+      const u = kat ? kat.urunler.find(x => x.urun_id === uId) : null;
+      if(!u) return;
+      
+      document.getElementById('form-title').innerText = "📝 Kartı Düzenle";
+      document.getElementById('form-product-id').value = u.urun_id;
+      document.getElementById('form-category-id').value = kId;
+      document.getElementById('form-product-name').value = u.isim;
+      document.getElementById('form-product-desc').value = u.aciklama;
+      document.getElementById('form-product-price').value = u.fiyatlar[0].fiyat;
+      document.getElementById('form-product-size').value = u.fiyatlar[0].boyut;
+      document.getElementById('form-product-img-url').value = u.resim_url || '';
+      if(u.resim_url) {
+        document.getElementById('gorsel-onizleme').innerText = "Mevcut görsel atanmış durumda.";
+        document.getElementById('gorsel-onizleme').className = "mt-2 text-[11px] text-zinc-400 font-mono";
+        document.getElementById('gorsel-onizleme').classList.remove('hidden');
+      }
+    }
+
+    async function urunKaydet(e) {
+      e.preventDefault();
+      const urunVerisi = {
+        urun_id: document.getElementById('form-product-id').value || null,
+        isim: document.getElementById('form-product-name').value,
+        aciklama: document.getElementById('form-product-desc').value,
+        resim_url: document.getElementById('form-product-img-url').value,
+        fiyatlar: [{ boyut: document.getElementById('form-product-size').value || 'Porsiyon', fiyat: Number(document.getElementById('form-product-price').value) }]
+      };
+      await fetch(`${apiYolu}?action=save_urun`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ kategoriId: document.getElementById('form-category-id').value, urun: urunVerisi })});
+      formSifirla(); verileriGetir();
+    }
+
+    async function urunSil(kId, uId) { 
+      if(confirm('Silinsin mi?')) { 
+        await fetch(`${apiYolu}?action=delete_urun`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ katId: kId, urunId: uId })}); 
+        verileriGetir(); 
+      } 
+    }
+    
+    async function stokDegis(uId, s) { 
+      await fetch(`${apiYolu}?action=update_stok`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ urunId: uId, isAvailable: s })}); 
+      verileriGetir(); 
+    }
+
+    async function aiAçıklamaYazdir() {
+      const n = document.getElementById('form-product-name').value;
+      if(!n.trim()) return alert("Önce isim yazın.");
+      const t = document.getElementById('form-product-desc'); t.placeholder = "AI Düşünüyor..."; t.value = '';
+      const v = await fetch(`${apiYolu}?action=ai_yazdir`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ urunAdi: n })}).then(r => r.json());
+      t.value = v.aciklama;
+    }
+
+    function formSifirla() {
+      document.getElementById('product-form').reset();
+      document.getElementById('form-product-id').value = '';
+      document.getElementById('form-product-img-url').value = '';
+      document.getElementById('form-title').innerText = "✨ Yeni Ürün Tanımla";
+      document.getElementById('gorsel-onizleme').classList.add('hidden');
+    }
+
+    verileriGetir();
+    apiConfigOku();
+  </script>
+</body>
+</html>
